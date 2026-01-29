@@ -1,10 +1,80 @@
-h1, h2, h3, h4, h5, h6 {
+body {
+    font-family: Arial, sans-serif;
+    background-color: #F2F4F8;
+    margin: 0;
+    padding: 0;
+}
+
+/* Center header, main and footer */
+header, main, footer {
+    width: 1050px;
+    margin: 0 auto;
+}
+
+/* Top Title */
+h1 {
+    margin: 20px 0 10px 0;
+    color: navy;
+    text-align: center;
+    font-size: 44px;
     font-weight: bold;
 }
 
-.product-title {
-    font-size: 1.5em;
-    margin-bottom: 0.5em;
+/* Main white box */
+main {
+    display: block;
+    padding: 1.5em;
+    background: white;
+    border: 2px solid navy;
+    margin-bottom: 25px;
 }
 
+/* Section heading */
+h2 {
+    text-align: center;
+    font-size: 32px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
 
+/* Add Item link spacing */
+main p {
+    margin-bottom: 15px;
+}
+
+/* Table styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+th, td {
+    padding: 12px;
+    border: 1px solid #CCCCCC;
+    text-align: center;
+    vertical-align: middle;
+}
+
+th {
+    font-weight: bold;
+    background-color: #ffffff;
+}
+
+/* Keep buttons centered */
+td form {
+    margin: 0;
+}
+
+input[type="submit"] {
+    padding: 4px 10px;
+    cursor: pointer;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    padding: 10px 0 25px 0;
+}
