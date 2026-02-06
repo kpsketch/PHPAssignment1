@@ -78,3 +78,52 @@ footer {
     font-weight: bold;
     padding: 10px 0 25px 0;
 }
+
+/* =========================
+   SMALL FIXES FOR DETAILS PAGE
+   (minimal change, no redesign)
+========================= */
+
+.detail-image {
+    display: block;
+    margin: 0 auto 20px auto;
+    max-width: 400px;
+}
+
+.details {
+    width: 400px;
+    margin: 0 auto;
+}
+
+.details p {
+    text-align: left;
+    margin: 8px 0;
+}
+
+.back-link {
+    text-align: center;
+}
+
+/* ===== DETAILS PAGE FIX ===== */
+
+.detail-image {
+    display: block;
+    margin: 0 auto 20px auto;
+    max-width: 400px;
+    height: auto;
+}
+
+.details {
+    width: 400px;
+    margin: 0 auto;
+}
+
+.details p {
+    text-align: left;
+    margin: 8px 0;
+}
+
+.back-link {
+    text-align: center;
+}
+

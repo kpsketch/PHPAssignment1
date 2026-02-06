@@ -1,29 +1,29 @@
 <?php
-session_start();
+    session_start();
 ?>
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Shopping List Manager - Database Error</title>
-    <link rel="stylesheet" type="text/css" href="css/contact.css">
-</head>
 
-<body>
+    <head>
+        <title>Shopping List Manager - Database Error</title>
+        <link rel="stylesheet" type="text/css" href="css/shopping.css" />
+    </head>
 
-<?php include("header.php"); ?>
+    <body>
+        <?php include("header.php"); ?>
 
-<main>
-    <h2>Database Error</h2>
+        <main>
+            <h2>Database Error</h2>
 
-    <p>There was an error connecting to the database.</p>
-    <p>The database must be installed.</p>
-    <p>MySQL must be running.</p>
-    <p>Error Message: <?php echo $_SESSION["database_error"]; ?></p>
+            <p>There was an error connecting to the database.</p>
+            <p>The database must be installed.</p>
+            <p>MySQL must be running.</p>
+            <p>Error Message: <?php echo htmlspecialchars($_SESSION["database_error"]); ?></p>
 
-    <p><a href="index.php">View Shopping List</a></p>
-</main>
+            <p><a href="index.php">View Shopping List</a></p>
+        </main>
 
-<?php include("footer.php"); ?>
+        <?php include("footer.php"); ?> 
 
-</body>
+    </body>
 </html>
