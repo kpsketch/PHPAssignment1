@@ -1,27 +1,24 @@
 <?php
-    session_start();
+session_start();
 ?>
 <!DOCTYPE html>
 <html>
+<head>
+    <title>Shopping List Manager - Error</title>
+    <link rel="stylesheet" type="text/css" href="css/shopping.css" />
+</head>
+<body>
 
-    <head>
-        <title>Shopping List Manager - Error</title>
-        <link rel="stylesheet" type="text/css" href="css/shopping.css" />
-    </head>
+<?php include("header.php"); ?>
 
-    <body>
-        <?php include("header.php"); ?>
+<main>
+    <h2>Error</h2>
+    <p style="color:red; font-weight:bold; text-align:center;">
+        <?php echo htmlspecialchars($_SESSION["add_error"] ?? "Something went wrong."); ?>
+    </p>
+    <p style="text-align:center;"><a href="index.php">Back</a></p>
+</main>
 
-        <main>
-            <h2>Error</h2>
-            
-            <p>Error Message: <?php echo htmlspecialchars($_SESSION["add_error"]); ?></p>
-
-            <p><a href="add_item_form.php">Add Item</a></p>
-            <p><a href="index.php">View Shopping List</a></p>
-        </main>
-
-        <?php include("footer.php"); ?> 
-
-    </body>
+<?php include("footer.php"); ?>
+</body>
 </html>

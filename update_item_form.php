@@ -12,7 +12,6 @@
     $statement->execute();
     $item = $statement->fetch();
     $statement->closeCursor();
-
 ?>
 
 <!DOCTYPE html>
@@ -34,13 +33,13 @@
                 <div id="data">
 
                     <label>Item Name:</label>
-                    <input type="text" name="item_name" value="<?php echo $item['itemName']; ?>" /><br />
+                    <input type="text" name="item_name" value="<?php echo htmlspecialchars($item['itemName']); ?>" /><br />
 
                     <label>Quantity:</label>
-                    <input type="text" name="quantity" value="<?php echo $item['quantity']; ?>" /><br />
+                    <input type="text" name="quantity" value="<?php echo htmlspecialchars($item['quantity']); ?>" /><br />
 
                     <label>Category:</label>
-                    <input type="text" name="category" value="<?php echo $item['category']; ?>" /><br />
+                    <input type="text" name="category" value="<?php echo htmlspecialchars($item['category']); ?>" /><br />
 
                     <label>Status:</label><br />
                     <input type="radio" name="status" value="To Buy" <?php if ($item['status'] == 'To Buy') echo 'checked'; ?>/>To Buy<br />
@@ -48,11 +47,14 @@
 
                     <?php if (!empty($item['imageName'])): ?>
                         <label>Current Image:</label>
-                        <img src="images/<?php echo htmlspecialchars($item['imageName']); ?>" height="100"><br />                        
+                        <img src="images/<?php echo htmlspecialchars($item['imageName']); ?>" height="100"><br /><br />
                     <?php endif; ?>
 
                     <label>Update Image:</label>
-                    <input type="file" name="file1" /><br />
+                    <input type="file" name="file1" /><br /><br />
+
+                    <label>Remove Current Image:</label>
+                    <input type="checkbox" name="use_placeholder" value="1" /> Use placeholder<br /><br />
 
                 </div>
 

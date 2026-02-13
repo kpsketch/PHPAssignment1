@@ -11,12 +11,17 @@
     $category  = filter_input(INPUT_POST, 'category');
     $status    = filter_input(INPUT_POST, 'status');
 
+    // NEW: checkbox to switch back to placeholder
+    $use_placeholder = filter_input(INPUT_POST, 'use_placeholder');
+
     // Get the uploaded image (if any)
     $image = $_FILES['file1'];
 
     // Get current item record to check current image name
     $queryItems = '
-        SELECT itemID, itemName, quantity, category, status, imageName FROM shopping_list WHERE itemID = :item_id';
+        SELECT itemID, itemName, quantity, category, status, imageName 
+        FROM shopping_list 
+        WHERE itemID = :item_id';
 
     $statement = $db->prepare($queryItems);
     $statement->bindValue(':item_id', $item_id);
@@ -54,36 +59,43 @@
         die();  
     }
 
-    // If new image is uploaded
-    if ($image && $image['error'] == UPLOAD_ERR_OK) {
-
-        // process new image
-        $original_filename = basename($image['name']);
-        $upload_path = $base_dir . $original_filename;
-        move_uploaded_file($image['tmp_name'], $upload_path);        
-
-        process_image($base_dir, $original_filename);        
-
-        // save _100 version in DB
-        $dot_pos = strrpos($original_filename, '.');
-        $new_image_name = substr($original_filename, 0, $dot_pos) . '_100' . substr($original_filename, $dot_pos);
-        $image_name = $new_image_name;
-
-        // delete old images if not placeholder
-        if($old_image_name != 'placeholder_100.jpg') {
+    // helper to delete old images
+    function delete_old_images($old_image_name, $base_dir) {
+        if ($old_image_name != 'placeholder_100.jpg') {
             $old_base = substr($old_image_name, 0, strrpos($old_image_name, '_100'));
             $old_ext = substr($old_image_name, strrpos($old_image_name, '.'));
             $original = $old_base . $old_ext;
             $img100 = $old_base . '_100' . $old_ext;
             $img400 = $old_base . '_400' . $old_ext;
 
-            foreach([$original, $img100, $img400] as $file) {
+            foreach ([$original, $img100, $img400] as $file) {
                 $path = $base_dir . $file;
-                if(file_exists($path)) {
+                if (file_exists($path)) {
                     unlink($path);
                 }
             }
         }
+    }
+
+    // ✅ If user selected placeholder, set image to placeholder and delete old images
+    if ($use_placeholder == "1") {
+        delete_old_images($old_image_name, $base_dir);
+        $image_name = 'placeholder_100.jpg';
+    }
+    // ✅ Else if new image is uploaded, process it and delete old images
+    else if ($image && $image['error'] == UPLOAD_ERR_OK) {
+
+        $original_filename = basename($image['name']);
+        $upload_path = $base_dir . $original_filename;
+        move_uploaded_file($image['tmp_name'], $upload_path);
+
+        process_image($base_dir, $original_filename);
+
+        $dot_pos = strrpos($original_filename, '.');
+        $new_image_name = substr($original_filename, 0, $dot_pos) . '_100' . substr($original_filename, $dot_pos);
+        $image_name = $new_image_name;
+
+        delete_old_images($old_image_name, $base_dir);
     }
 
     // Update Item
@@ -111,5 +123,4 @@
     $url = "update_confirmation.php";
     header("Location: " . $url);
     die();
-
 ?>
