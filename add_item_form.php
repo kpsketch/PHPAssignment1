@@ -1,56 +1,54 @@
 <?php
-    session_start();
-    require("database.php");
+session_start();
+require_once("database.php");
 ?>
-
 <!DOCTYPE html>
 <html>
+<head>
+    <title>Shopping List Manager - Add Item</title>
+    <link rel="stylesheet" type="text/css" href="css/shopping.css" />
+</head>
 
-    <head>
-        <title>Shopping List Manager - Add Item</title>
-        <link rel="stylesheet" type="text/css" href="css/shopping.css" />
-    </head>
+<body>
+<?php include("header.php"); ?>
 
-    <body>
+<main>
+    <h2>Add Item</h2>
 
-        <?php include("header.php"); ?>
+    <form action="add_item.php" method="post" id="add_item_form">
 
-        <main>
-            <h2>Add Item</h2>
+        <div id="data">
+            <label>Item Name:</label>
+            <input type="text" name="item_name" required /><br />
 
-            <form action="add_item.php" method="post" id="add_item_form" enctype="multipart/form-data">
+            <label>Quantity:</label>
+            <input type="number" name="quantity" min="1" required /><br />
 
-                <div id="data">
+            <label>Category:</label>
+            <input type="text" name="category" required /><br />
 
-                    <label>Item Name:</label>
-                    <input type="text" name="item_name" /><br />
+            <label>Price ($):</label>
+            <input type="number" name="price" step="0.01" min="0" required /><br />
 
-                    <label>Quantity:</label>
-                    <input type="text" name="quantity" /><br />
+            <label>Status:</label><br />
+            <input type="radio" name="status" value="To Buy" checked /> To Buy<br />
+            <input type="radio" name="status" value="Bought" /> Bought<br /><br />
 
-                    <label>Category:</label>
-                    <input type="text" name="category" /><br />
+            <p style="margin-top:10px; font-size:14px; color:#333;">
+                ✅ Image will be selected automatically based on Item Name.
+            </p>
+        </div>
 
-                    <label>Status:</label><br />
-                    <input type="radio" name="status" value="To Buy" checked />To Buy<br />
-                    <input type="radio" name="status" value="Bought" />Bought<br /><br />
+        <div id="buttons">
+            <label>&nbsp;</label>
+            <input type="submit" value="Save Item" />
+        </div>
 
-                    <label>Upload Image:</label>
-                    <input type="file" name="file1" /><br />
+    </form>
 
-                </div>
+    <p><a href="index.php">View Shopping List</a></p>
+</main>
 
-                <div id="buttons">
-                    <label>&nbsp;</label>
-                    <input type="submit" value="Save Item" /><br />
-                </div>
-
-            </form>
-
-            <p><a href="index.php">View Shopping List</a></p>
-        </main>
-
-        <?php include("footer.php"); ?>
-
-    </body>
+<?php include("footer.php"); ?>
+</body>
 </html>

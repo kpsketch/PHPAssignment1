@@ -1,45 +1,72 @@
 <?php
 session_start();
-
-$user_name = filter_input(INPUT_POST, 'user_name');
-$user_password = filter_input(INPUT_POST, 'password');
-$email_address = filter_input(INPUT_POST, 'email_address');
-
 require_once('database.php');
 
-$hash = password_hash($user_password, PASSWORD_DEFAULT);
+/* TEMP DEBUG (remove later) */
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
-$queryUsers = 'SELECT userName FROM registrations';
-$statement = $db->prepare($queryUsers);
-$statement->execute();
-$users = $statement->fetchAll();
-$statement->closeCursor();
+$user_name = trim((string)filter_input(INPUT_POST, 'user_name'));
+$user_password = (string)filter_input(INPUT_POST, 'password');
+$email_address = trim((string)filter_input(INPUT_POST, 'email_address'));
 
-foreach ($users as $user) {
-    if ($user_name == $user["userName"]) {
-        $_SESSION["add_error"] = "Duplicate username. Try again.";
-        header("Location: error.php");
-        die();
-    }
-}
-
-if ($user_name == null || $user_password == null || $email_address == null) {
-    $_SESSION["add_error"] = "Invalid registration data. Check all fields.";
+if ($user_name === '' || $user_password === '' || $email_address === '') {
+    $_SESSION["add_error"] = "All fields are required.";
     header("Location: error.php");
-    die();
+    exit;
 }
 
-$query = 'INSERT INTO registrations (userName, password, emailAddress) VALUES (:userName, :password, :emailAddress)';
-$statement = $db->prepare($query);
-$statement->bindValue(':userName', $user_name);
-$statement->bindValue(':password', $hash);
-$statement->bindValue(':emailAddress', $email_address);
-$statement->execute();
-$statement->closeCursor();
+if (!filter_var($email_address, FILTER_VALIDATE_EMAIL)) {
+    $_SESSION["add_error"] = "Please enter a valid email address.";
+    header("Location: error.php");
+    exit;
+}
 
-$_SESSION["isLoggedIn"] = 1;
-$_SESSION["userName"] = $user_name;
+try {
+    // Check duplicate username/email
+    $queryCheck = "
+        SELECT userID
+        FROM registrations
+        WHERE userName = :userName OR emailAddress = :emailAddress
+        LIMIT 1
+    ";
+    $stmt = $db->prepare($queryCheck);
+    $stmt->execute([
+        ':userName' => $user_name,
+        ':emailAddress' => $email_address
+    ]);
+
+    if ($stmt->fetch()) {
+        $_SESSION["add_error"] = "Duplicate username or email. Try again.";
+        header("Location: error.php");
+        exit;
+    }
+
+    $hash = password_hash($user_password, PASSWORD_DEFAULT);
+
+    // Insert user
+    $queryInsert = "
+        INSERT INTO registrations (userName, password, emailAddress, failed_attempts, last_failed_login)
+        VALUES (:userName, :password, :emailAddress, 0, NULL)
+    ";
+    $stmt = $db->prepare($queryInsert);
+    $stmt->execute([
+        ':userName' => $user_name,
+        ':password' => $hash,
+        ':emailAddress' => $email_address
+    ]);
+
+    // Log in after register
+    $_SESSION["isLoggedIn"] = true;
+    $_SESSION["userName"] = $user_name;
 
 header("Location: register_confirmation.php");
-die();
-?>
+exit;
+    exit;
+
+} catch (PDOException $e) {
+    $_SESSION["add_error"] = "DB Error: " . $e->getMessage();
+    header("Location: error.php");
+    exit;
+}

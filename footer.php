@@ -1,3 +1,3 @@
-<footer>
-    &copy; 2026 Shopping List Manager
-</footer>
+<header>
+    <h1>Shopping List Manager</h1>
+</header>

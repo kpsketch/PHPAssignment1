@@ -1,88 +1,80 @@
 <?php
-    session_start();
+session_start();
+require_once("database.php");
 
-    $item_name = filter_input(INPUT_POST, 'item_name');
-    $quantity  = filter_input(INPUT_POST, 'quantity');
-    $category  = filter_input(INPUT_POST, 'category');
-    $status    = filter_input(INPUT_POST, 'status');
-    $image = $_FILES['file1'];   
+$item_name = trim((string)filter_input(INPUT_POST, 'item_name'));
+$quantity  = filter_input(INPUT_POST, 'quantity', FILTER_VALIDATE_INT);
+$category  = trim((string)filter_input(INPUT_POST, 'category'));
+$status    = trim((string)filter_input(INPUT_POST, 'status'));
+$price     = filter_input(INPUT_POST, 'price', FILTER_VALIDATE_FLOAT);
 
-    require_once('database.php');
-    require_once('image_util.php');
+// Validation
+if ($item_name === '' || $quantity === false || $category === '' || $status === '' || $price === false) {
+    $_SESSION["add_error"] = "Invalid item data. Please fill all fields correctly.";
+    header("Location: error.php");
+    exit;
+}
 
-    $base_dir = 'images/';
+// Duplicate check
+$queryCheck = "
+    SELECT itemID
+    FROM shopping_list
+    WHERE itemName = :itemName
+    LIMIT 1
+";
+$stmt = $db->prepare($queryCheck);
+$stmt->bindValue(':itemName', $item_name);
+$stmt->execute();
+if ($stmt->fetch()) {
+    $_SESSION["add_error"] = "Duplicate item name. Try again.";
+    header("Location: error.php");
+    exit;
+}
+$stmt->closeCursor();
 
-    // Check for duplicate item name (same style as teacher duplicate email)
-    $queryItems = '
-        SELECT itemName FROM shopping_list';
+// Auto image pick based on item name
+function pick_image_by_item_name(string $item_name): string {
+    $name = strtolower($item_name);
+    $name_clean = preg_replace('/[^a-z0-9]/', '', $name);
 
-    $statement = $db->prepare($queryItems);
-    $statement->execute();
-    $items = $statement->fetchAll();
-    $statement->closeCursor();
+    $map = [
+        'milk'       => 'milk_100.png',
+        'bread'      => 'bread_100.png',
+        'headphones' => 'headphones_100.png',
+        'tshirt'     => 'tshirt_100.png',
+        'apple'      => 'apple_100.png',
+        'juice'      => 'juice_100.png',
+    ];
 
-    foreach ($items as $item) {
-        if ($item_name == $item["itemName"]) {
-            $_SESSION["add_error"] = "Invalid data, Duplicate Item Name. Try again.";
-            $url = "error.php";
-            header("Location: " . $url);
-            die();  
+    foreach ($map as $key => $file) {
+        if (strpos($name_clean, $key) !== false) {
+            return $file;
         }
     }
+    return 'placeholder_100.jpg';
+}
 
-    if ($item_name == null || $quantity == null || $category == null || $status == null) {
-        $_SESSION["add_error"] = "Invalid item data, Check all fields and try again.";
-        $url = "error.php";
-        header("Location: " . $url);
-        die();  
-    }
+$image_name = pick_image_by_item_name($item_name);
+if (!file_exists("images/" . $image_name)) {
+    $image_name = 'placeholder_100.jpg';
+}
 
-    $image_name = ''; // default empty
+// Insert item
+$queryInsert = "
+    INSERT INTO shopping_list (itemName, quantity, category, status, imageName, price)
+    VALUES (:itemName, :quantity, :category, :status, :imageName, :price)
+";
+$stmt = $db->prepare($queryInsert);
+$stmt->bindValue(':itemName', $item_name);
+$stmt->bindValue(':quantity', $quantity);
+$stmt->bindValue(':category', $category);
+$stmt->bindValue(':status', $status);
+$stmt->bindValue(':imageName', $image_name);
+$stmt->bindValue(':price', $price);
+$stmt->execute();
+$stmt->closeCursor();
 
-    // ******* Image Upload *******
-
-    if ($image && $image['error'] == UPLOAD_ERR_OK) {
-        // process new image
-        $original_filename = basename($image['name']);
-        $upload_path = $base_dir . $original_filename;
-        move_uploaded_file($image['tmp_name'], $upload_path);
-
-        process_image($base_dir, $original_filename);
-
-        // save _100 version in DB
-        $dot_pos = strpos($original_filename, '.');
-        $name_100 = substr($original_filename, 0, $dot_pos) . '_100' . substr($original_filename, $dot_pos);
-        $image_name = $name_100;
-    }
-    else {
-        // Use placeholder
-        $placeholder = 'placeholder.jpg';
-        $placeholder_100 = 'placeholder_100.jpg';
-        $placeholder_400 = 'placeholder_400.jpg';
-
-        if (!file_exists($base_dir . $placeholder_100) || !file_exists($base_dir . $placeholder_400)) {
-            process_image($base_dir, $placeholder);
-        }
-
-        $image_name = $placeholder_100;
-    }
-
-    // Add Item
-    $query = 'INSERT INTO shopping_list (itemName, quantity, category, status, imageName) 
-        VALUES (:itemName, :quantity, :category, :status, :imageName)';
-
-    $statement = $db->prepare($query);
-    $statement->bindValue(':itemName', $item_name);
-    $statement->bindValue(':quantity', $quantity);
-    $statement->bindValue(':category', $category);
-    $statement->bindValue(':status', $status);
-    $statement->bindValue(':imageName', $image_name);
-    $statement->execute();
-    $statement->closeCursor();
-
-    $_SESSION["itemName"] = $item_name;
-    $url = "add_confirmation.php";
-    header("Location: " . $url);
-    die();
-
+$_SESSION["itemName"] = $item_name;
+header("Location: add_confirmation.php");
+exit;
 ?>

@@ -1,6 +1,4 @@
 <?php
-
-
 session_start();
 ?>
 <!DOCTYPE html>
@@ -9,7 +7,6 @@ session_start();
     <title>Shopping List Manager - Login</title>
     <link rel="stylesheet" type="text/css" href="css/shopping.css" />
 </head>
-
 <body>
 <?php include("header.php"); ?>
 

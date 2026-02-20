@@ -8,7 +8,6 @@ session_start();
     <link rel="stylesheet" type="text/css" href="css/shopping.css" />
 </head>
 <body>
-
 <?php include("header.php"); ?>
 
 <main>
@@ -16,11 +15,9 @@ session_start();
     <p>There was an error connecting to the database.</p>
     <p>MySQL must be running.</p>
     <p><strong>Error Message:</strong> <?php echo htmlspecialchars($_SESSION["database_error"] ?? ""); ?></p>
-
     <p><a href="index.php">Back to Home</a></p>
 </main>
 
 <?php include("footer.php"); ?>
-
 </body>
 </html>

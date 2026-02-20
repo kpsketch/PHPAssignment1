@@ -8,7 +8,6 @@ session_start();
     <link rel="stylesheet" type="text/css" href="css/shopping.css" />
 </head>
 <body>
-
 <?php include("header.php"); ?>
 
 <main>

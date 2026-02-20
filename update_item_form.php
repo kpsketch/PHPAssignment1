@@ -1,75 +1,77 @@
 <?php
-    require_once("database.php");
-    
-    // get data from the form
-    $item_id = filter_input(INPUT_POST, 'item_id', FILTER_VALIDATE_INT);
+require_once("database.php");
 
-    $queryItems = '
-        SELECT itemID, itemName, quantity, category, status, imageName FROM shopping_list WHERE itemID = :item_id';
+$item_id = filter_input(INPUT_POST, 'item_id', FILTER_VALIDATE_INT);
+if (!$item_id) {
+    header("Location: index.php");
+    exit;
+}
 
-    $statement = $db->prepare($queryItems);
-    $statement->bindValue(':item_id', $item_id);
-    $statement->execute();
-    $item = $statement->fetch();
-    $statement->closeCursor();
+$query = "
+    SELECT itemID, itemName, quantity, category, status, imageName, price
+    FROM shopping_list
+    WHERE itemID = :item_id
+";
+$statement = $db->prepare($query);
+$statement->bindValue(':item_id', $item_id);
+$statement->execute();
+$item = $statement->fetch();
+$statement->closeCursor();
+
+if (!$item) {
+    header("Location: index.php");
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
 <html>
+<head>
+    <title>Shopping List Manager - Update Item</title>
+    <link rel="stylesheet" type="text/css" href="css/shopping.css" />
+</head>
 
-    <head>
-        <title>Shopping List Manager - Update Item</title>
-        <link rel="stylesheet" type="text/css" href="css/shopping.css" />
-    </head>
+<body>
+<?php include("header.php"); ?>
 
-    <body>
-        <?php include("header.php"); ?>
+<main>
+    <h2>Update Item</h2>
 
-        <main>
-            <h2>Update Item</h2>
+    <form action="update_item.php" method="post" id="update_item_form">
+        <input type="hidden" name="item_id" value="<?php echo (int)$item['itemID']; ?>" />
 
-            <form action="update_item.php" method="post" id="update_item_form" enctype="multipart/form-data">
-                <input type="hidden" name="item_id" value="<?php echo $item['itemID']; ?>" />
-                <div id="data">
+        <div id="data">
+            <label>Item Name:</label>
+            <input type="text" name="item_name" value="<?php echo htmlspecialchars($item['itemName']); ?>" required /><br />
 
-                    <label>Item Name:</label>
-                    <input type="text" name="item_name" value="<?php echo htmlspecialchars($item['itemName']); ?>" /><br />
+            <label>Quantity:</label>
+            <input type="number" name="quantity" min="1" value="<?php echo htmlspecialchars($item['quantity']); ?>" required /><br />
 
-                    <label>Quantity:</label>
-                    <input type="text" name="quantity" value="<?php echo htmlspecialchars($item['quantity']); ?>" /><br />
+            <label>Category:</label>
+            <input type="text" name="category" value="<?php echo htmlspecialchars($item['category']); ?>" required /><br />
 
-                    <label>Category:</label>
-                    <input type="text" name="category" value="<?php echo htmlspecialchars($item['category']); ?>" /><br />
+            <label>Price ($):</label>
+            <input type="number" name="price" step="0.01" min="0"
+                   value="<?php echo htmlspecialchars($item['price']); ?>" required /><br />
 
-                    <label>Status:</label><br />
-                    <input type="radio" name="status" value="To Buy" <?php if ($item['status'] == 'To Buy') echo 'checked'; ?>/>To Buy<br />
-                    <input type="radio" name="status" value="Bought" <?php if ($item['status'] == 'Bought') echo 'checked'; ?> />Bought<br /><br />
+            <label>Status:</label><br />
+            <input type="radio" name="status" value="To Buy" <?php if ($item['status'] === 'To Buy') echo 'checked'; ?> /> To Buy<br />
+            <input type="radio" name="status" value="Bought" <?php if ($item['status'] === 'Bought') echo 'checked'; ?> /> Bought<br /><br />
 
-                    <?php if (!empty($item['imageName'])): ?>
-                        <label>Current Image:</label>
-                        <img src="images/<?php echo htmlspecialchars($item['imageName']); ?>" height="100"><br /><br />
-                    <?php endif; ?>
+            <p style="margin-top:10px; font-size:14px; color:#333;">
+                ✅ Image will update automatically if you change Item Name.
+            </p>
+        </div>
 
-                    <label>Update Image:</label>
-                    <input type="file" name="file1" /><br /><br />
+        <div id="buttons">
+            <label>&nbsp;</label>
+            <input type="submit" value="Update Item" />
+        </div>
+    </form>
 
-                    <label>Remove Current Image:</label>
-                    <input type="checkbox" name="use_placeholder" value="1" /> Use placeholder<br /><br />
+    <p><a href="index.php">View Shopping List</a></p>
+</main>
 
-                </div>
-
-                <div id="buttons">
-                   <label>&nbsp;</label>
-                   <input type="submit" value="Update Item" /><br /> 
-                </div>
-
-            </form>            
-
-            <p><a href="index.php">View Shopping List</a></p>
-
-        </main>
-
-        <?php include("footer.php"); ?> 
-
-    </body>
+<?php include("footer.php"); ?>
+</body>
 </html>

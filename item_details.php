@@ -1,79 +1,111 @@
 <?php
+session_start();
+
+if (!isset($_SESSION['isLoggedIn'])) {
+    header("Location: login_form.php");
+    exit;
+}
+
 require_once("database.php");
 
-// Get item ID
-$item_id = filter_input(INPUT_POST, 'item_id', FILTER_VALIDATE_INT);
-
-if (!$item_id) {
-    header("Location: index.php");
-    exit;
-}
-
-// Fetch item (use correct column name itemId)
-$query = "
-    SELECT itemId, itemName, quantity, category, status, imageName
+$queryItems = "
+    SELECT itemID, itemName, quantity, category, status, imageName, price
     FROM shopping_list
-    WHERE itemId = :item_id
+    ORDER BY itemID DESC
 ";
 
-$statement = $db->prepare($query);
-$statement->bindValue(':item_id', $item_id);
+$statement = $db->prepare($queryItems);
 $statement->execute();
-$item = $statement->fetch();
+$items = $statement->fetchAll();
 $statement->closeCursor();
 
-if (!$item) {
-    echo "Item not found.";
-    exit;
-}
-
-// Convert _100 to _400 image
-$imageName = $item['imageName'];  // example: milk_100.jpg
-$dotPosition = strrpos($imageName, '.');
-$baseName = substr($imageName, 0, $dotPosition);
-$extension = substr($imageName, $dotPosition);
-
-if (substr($baseName, -4) === '_100') {
-    $baseName = substr($baseName, 0, -4);
-}
-
-$imageName_400 = $baseName . '_400' . $extension; // milk_400.jpg
+$grand_total = 0.0;
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Shopping List Manager - Item Details</title>
+    <title>Shopping List Manager - Home</title>
     <link rel="stylesheet" type="text/css" href="css/shopping.css" />
 </head>
 
 <body>
-
 <?php include("header.php"); ?>
 
 <main>
-    <h2>Item Details</h2>
+    <h2>
+        Shopping List (Logged In User: <?php echo htmlspecialchars($_SESSION['userName']); ?>)
+    </h2>
 
-    <!-- BIG IMAGE -->
-    <img class="detail-image"
-     src="images/<?php echo htmlspecialchars($imageName_400); ?>"
-     alt="<?php echo htmlspecialchars($item['itemName']); ?>" />
+    <table>
+        <tr>
+            <th>Photo</th>
+            <th>Item Name</th>
+            <th>Quantity</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Price</th>
+            <th>Total</th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
 
-    <!-- DETAILS -->
-    <div class="details">
-        <p><strong>Item Name:</strong> <?php echo htmlspecialchars($item['itemName']); ?></p>
-        <p><strong>Quantity:</strong> <?php echo htmlspecialchars($item['quantity']); ?></p>
-        <p><strong>Category:</strong> <?php echo htmlspecialchars($item['category']); ?></p>
-        <p><strong>Status:</strong> <?php echo htmlspecialchars($item['status']); ?></p>
-    </div>
+        <?php foreach ($items as $item): ?>
+            <?php
+                $price = (float)$item['price'];
+                $qty = (int)$item['quantity'];
+                $total = $qty * $price;
+                $grand_total += $total;
+                $img = $item['imageName'] ?? 'placeholder_100.jpg';
+            ?>
+            <tr>
+                <td>
+                    <img src="images/<?php echo htmlspecialchars($img); ?>"
+                         alt="<?php echo htmlspecialchars($item['itemName']); ?>"
+                         style="width:80px;height:80px;object-fit:cover;">
+                </td>
+                <td><?php echo htmlspecialchars($item['itemName']); ?></td>
+                <td><?php echo htmlspecialchars($qty); ?></td>
+                <td><?php echo htmlspecialchars($item['category']); ?></td>
+                <td><?php echo htmlspecialchars($item['status']); ?></td>
+                <td>$<?php echo number_format($price, 2); ?></td>
+                <td>$<?php echo number_format($total, 2); ?></td>
 
-    <p class="back-link">
-        <a href="index.php">Back to Shopping List</a>
-    </p>
+                <td>
+                    <form action="item_details.php" method="post">
+                        <input type="hidden" name="item_id" value="<?php echo (int)$item['itemID']; ?>">
+                        <input type="submit" value="View">
+                    </form>
+                </td>
 
+                <td>
+                    <form action="update_item_form.php" method="post">
+                        <input type="hidden" name="item_id" value="<?php echo (int)$item['itemID']; ?>">
+                        <input type="submit" value="Edit">
+                    </form>
+                </td>
+
+                <td>
+                    <form action="delete_item.php" method="post"
+                          onsubmit="return confirm('Are you sure you want to delete this item?');">
+                        <input type="hidden" name="item_id" value="<?php echo (int)$item['itemID']; ?>">
+                        <input type="submit" value="Delete">
+                    </form>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+
+        <tr style="font-weight:bold; background:#f2f2f2;">
+            <td colspan="6" style="text-align:right;">Grand Total:</td>
+            <td colspan="4">$<?php echo number_format($grand_total, 2); ?></td>
+        </tr>
+    </table>
+
+    <p><a href="add_item_form.php">Add Item</a></p>
+    <p><a href="logout.php">Logout</a></p>
 </main>
 
 <?php include("footer.php"); ?>
-
 </body>
 </html>

@@ -25,7 +25,7 @@ if ($user) {
 
     if ($last_failed) {
         $interval = $now->getTimestamp() - $last_failed->getTimestamp();
-        if ($user['failed_attempts'] >= 3 && $interval < 300) {
+        if ((int)$user['failed_attempts'] >= 3 && $interval < 300) {
             $remaining = 300 - $interval;
             $_SESSION['login_error'] = "Account locked. Try again in " . ceil($remaining) . " seconds.";
             header("Location: login_form.php");
@@ -34,7 +34,7 @@ if ($user) {
     }
 
     if (password_verify($user_password, $user['password'])) {
-        $_SESSION['isLoggedIn'] = TRUE;
+        $_SESSION['isLoggedIn'] = true;
         $_SESSION['userName'] = $user['userName'];
         $_SESSION['user_id'] = $user['userID'];
 
